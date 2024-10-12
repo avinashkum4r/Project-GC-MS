@@ -59,5 +59,6 @@ def main(keywords):
 
 if __name__ == "__main__":
     # Sample keywords to search
-    keywords = ['GC-MS', 'mass spectrometry', 'chemical analysis']
+    keywords = ['GC-MS', 'mass spectrometry', 'chemical analysis', 'zea mays', 'gas chromatography',
+                'heavy metal toxicity', 'lead', 'metabolomics', 'plant stress']
     main(keywords)
