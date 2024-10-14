@@ -249,7 +249,8 @@ if __name__ == "__main__":
         "Metabolomics",
         "Mass Spectrometry",
         "Data Analysis",
-        "Metabolic Profiling"
+        "Metabolic Profiling",
+        "Zea Mays"
     ]
 
     for keyword in keywords:

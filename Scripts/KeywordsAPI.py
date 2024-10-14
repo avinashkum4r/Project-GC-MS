@@ -69,6 +69,15 @@ def main(keywords):
 
 
 if __name__ == "__main__":
-    keywords = ['GC-MS', 'mass spectrometry', 'chemical analysis', 'zea mays', 'gas chromatography',
-                'heavy metal toxicity', 'lead', 'metabolomics', 'plant stress']
+    keywords = ['Gas Chromatography Mass Spectrometry lead Zea mays',
+                'GC-MS analysis heavy metals maize',
+                'Lead contamination in maize research',
+                'Heavy metals in Zea mays scholarly articles',
+                'Lead exposure in plants research papers',
+                'Lead in maize Gas Chromatography research',
+                'Heavy metal toxicity in maize scientific papers',
+                'GC-MS study on lead in maize',
+                'Lead contamination plant research articles',
+                'Toxic metals in maize scholarly papers'
+                ]
     main(keywords)
