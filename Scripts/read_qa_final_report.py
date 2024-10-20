@@ -28,8 +28,6 @@ def insert_into_db(file_path, sheet):
         headers.append(i)
 
     for i, row in df.iterrows():
-        if i == 0:
-            continue
         query = f'''INSERT INTO gcms.qa_final_report(sheet_name, peak, start, retention_time, end, height, 
         area, area_degree) VALUES ('{sheet}', {row[headers[0]]}, {row[headers[1]]}, {row[headers[2]]}, {row[headers[3]]}
         , {row[headers[4]]}, {row[headers[5]]}, {row[headers[6]]});'''
