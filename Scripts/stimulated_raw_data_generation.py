@@ -52,7 +52,7 @@ mz_values = np.random.uniform(50, 500, num_points)  # Simulate mass-to-charge ra
 
 # Save the generated raw data to a CSV file (time, intensity, m/z)
 raw_data = pd.DataFrame({"Time (min)": time, "Intensity": raw_signal, "m/z": mz_values})
-file_path = r"C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\simulated_10lakh_raw_chromatogram.csv"
+file_path = r"C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\simulated10lakhrawchromatogram.csv"
 raw_data.to_csv(file_path, index=False)
 
 # The raw data file is now saved with 1 million points
@@ -77,20 +77,20 @@ def pudh_data_to_mysql(csv_file_path):
         if connection.is_connected():
             cursor = connection.cursor()
 
-            create_table = (r"CREATE TABLE IF NOT EXISTS raw_chromatogram_data ( "
-                            r"id INT AUTO_INCREMENT PRIMARY KEY, time FLOAT, intensity FLOAT, mz FLOAT );")
+            create_table = (r"CREATE TABLE IF NOT EXISTS gcms.raw_chromatogram_data ( "
+                            r"id INT AUTO_INCREMENT PRIMARY KEY , time FLOAT, intensity FLOAT, mz FLOAT );")
 
             cursor.execute(create_table)
-            csv_file_path = csv_file_path.replace("\\", "\\\\")
+            # csv_file_path = csv_file_path.replace("\\", "\\\\")
 
-            load_data = f'''LOAD DATA INFILE '{csv_file_path}' INTO TABLE gcms.raw_chromatogram_data FIELDS 
-            TERMINATED BY ',' LINES TERMINATED BY '\\n' IGNORE 1 LINES (time, intensity, mz);'''
-            try:
-                cursor.execute(load_data)
-            except Error as e:
-                print(f"Error: {e}")
-
-            print(f"Data from {csv_file_path} successfully inserted into MySQL database.")
+            # load_data = f'''LOAD DATA INFILE '{csv_file_path}' INTO TABLE gcms.raw_chromatogram_data FIELDS
+            # TERMINATED BY ',' LINES TERMINATED BY '\\n' IGNORE 1 LINES (time, intensity, mz);'''
+            # try:
+            #     cursor.execute(load_data)
+            # except Error as e:
+            #     print(f"Error: {e}")
+            #
+            # print(f"Data from {csv_file_path} successfully inserted into MySQL database.")
     except Error as e:
         print(f"Error: {e}")
     finally:
