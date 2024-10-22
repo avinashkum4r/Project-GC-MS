@@ -4,10 +4,14 @@ import os
 import mysql.connector
 from mysql.connector import Error
 
-# Number of data points (10 lakh = 1 million)
+# Step 1: Set fixed seed for reproducibility
+np.random.seed(42)  # Fix the seed so that random values can be reproduced
+
+# Step 2: Generate time points and initialize signal
 num_points = 1000000
-total_duration = 36  # Total time in minutes (duration of chromatogram)
-time = np.linspace(0, total_duration, num_points)  # Generate 1 million time points
+total_duration = 36
+time = np.linspace(0, total_duration, num_points)
+raw_signal = np.zeros(num_points)
 
 # Define the peak characteristics from the integration peak list
 peaks = [
@@ -29,28 +33,29 @@ def gaussian(x, rt, height, width):
     return height * np.exp(-((x - rt) ** 2) / (2 * width ** 2))
 
 
-# Simulate signal from all peaks
-raw_signal = np.zeros(num_points)
-
+# Step 4: Generate raw signal based on peaks
 for peak in peaks:
     rt = peak["rt"]
     height = peak["height"]
-    width = peak["width"]  # Use the width (converted to FWHM for Gaussian function)
+    width = peak["width"]
     raw_signal += gaussian(time, rt, height, width)
 
-# Step 2: Add instrument noise (Gaussian noise for baseline fluctuations)
-noise_level = 0.02 * np.max(raw_signal)  # Set noise level as 2% of maximum signal
+# Step 5: Add invertible noise
+noise_level = 0.02 * np.max(raw_signal)  # 2% of max signal
 noise = np.random.normal(0, noise_level, num_points)
+tracked_noise = noise.copy()  # Track noise for reverse operation
 raw_signal += noise
 
-# Step 3: Add drift to simulate signal drift over time
+# Step 6: Add invertible drift
 drift = 0.001 * np.max(raw_signal) * np.sin(2 * np.pi * time / total_duration)
+tracked_drift = drift.copy()  # Track drift for reverse operation
 raw_signal += drift
 
-# Step 4: Simulate m/z spectra (optional, here we simulate random m/z values at each point)
-mz_values = np.random.uniform(50, 500, num_points)  # Simulate mass-to-charge ratio between 50 and 500
+# Step 7: Add random m/z values and track them
+mz_values = np.random.uniform(50, 500, num_points)
+tracked_mz_values = mz_values.copy()  # Track m/z for reverse operation
 
-# Save the generated raw data to a CSV file (time, intensity, m/z)
+# Save the data into a CSV (time, signal, m/z)
 raw_data = pd.DataFrame({"Time (min)": time, "Intensity": raw_signal, "m/z": mz_values})
 file_path = r"C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\simulated_10lakh_raw_chromatogram.csv"
 raw_data.to_csv(file_path, index=False)
@@ -65,7 +70,7 @@ sql_db = os.getenv('MYSQL_GCMS_DB')
 
 
 # Push data to MySQL database
-def pudh_data_to_mysql(csv_file_path):
+def push_data_to_mysql(csv_file_path):
     try:
         connection = mysql.connector.connect(
             host=sql_host,
@@ -103,5 +108,17 @@ def pudh_data_to_mysql(csv_file_path):
             print("Connection closed successfully")
 
 
+# ---- Reversing Process ----
+
+def reverse_simulated_data(signal_with_noise_and_drift, tracked_noise, tracked_drift):
+    # Reverse by subtracting noise and drift
+    original_signal = signal_with_noise_and_drift - tracked_noise - tracked_drift
+    return original_signal
+
+
+# Test reverse process
+recovered_signal = reverse_simulated_data(raw_signal, tracked_noise, tracked_drift)
+print(len(recovered_signal), type(recovered_signal))
+
 # Data load function trigger
-pudh_data_to_mysql(file_path)
+push_data_to_mysql(file_path)
