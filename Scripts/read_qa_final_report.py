@@ -4,21 +4,14 @@ from mysql.connector import Error
 import os
 
 
-def insert_into_db(file_path, sheet):
-    # Get ENV values
-    sql_host = os.getenv('MYSQL_HOST')
-    sql_user = os.getenv('MYSQL_USER')
-    sql_password = os.getenv('MYSQL_PASSWORD')
-    sql_db = os.getenv('MYSQL_GCMS_DB')
+# Get ENV values
+sql_host = os.getenv('MYSQL_HOST')
+sql_user = os.getenv('MYSQL_USER')
+sql_password = os.getenv('MYSQL_PASSWORD')
+sql_db = os.getenv('MYSQL_GCMS_DB')
 
-    connection = mysql.connector.connect(
-        host=sql_host,
-        user=sql_user,
-        password=sql_password,
-        database=sql_db
-    )
-    cursor = connection.cursor()
 
+def insert_into_db(file_path, sheet, cursor):
     # Read df
     df = pd.read_excel(file_path, sheet_name=sheet, engine='openpyxl')
     print(df)
@@ -39,12 +32,26 @@ def insert_into_db(file_path, sheet):
 
 
 # Main
-file_name = r"input\Qualitative Analysis Report 2 with changes.xlsx"
+file_name = r"input\Qualitative Analysis Report_all.xlsx"
 df1 = pd.ExcelFile(file_name)
 sheet_name = df1.sheet_names
 print(sheet_name)
-for i in sheet_name:
+
+connection = mysql.connector.connect(
+    host=sql_host,
+    user=sql_user,
+    password=sql_password,
+    database=sql_db
+)
+cursor = connection.cursor()
+for names in sheet_name:
     try:
-        insert_into_db(file_name, i)
+        insert_into_db(file_name, names, cursor)
     except Error as e:
-        print(f'{i}, Error: {e}')
+        cursor.execute('TRUNCATE TABLE gcms.qa_final_report;')
+        connection.commit()
+        print(f'{names}, Error: {e}')
+
+cursor.close()
+connection.close()
+print('Data inserted Successfully')
