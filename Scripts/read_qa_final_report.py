@@ -11,7 +11,8 @@ sql_password = os.getenv('MYSQL_PASSWORD')
 sql_db = os.getenv('MYSQL_GCMS_DB')
 
 
-def insert_into_db(file_path, sheet, cursor):
+def insert_into_db(file_path, sheet, conn):
+    cursor = conn.cursor()
     # Read df
     df = pd.read_excel(file_path, sheet_name=sheet, engine='openpyxl')
     print(df)
@@ -26,9 +27,6 @@ def insert_into_db(file_path, sheet, cursor):
         , {row[headers[4]]}, {row[headers[5]]}, {row[headers[6]]});'''
         print(query)
         cursor.execute(query)
-    cursor.execute('COMMIT;')
-    cursor.close()
-    connection.close()
 
 
 # Main
@@ -43,15 +41,16 @@ connection = mysql.connector.connect(
     password=sql_password,
     database=sql_db
 )
-cursor = connection.cursor()
 for names in sheet_name:
     try:
-        insert_into_db(file_name, names, cursor)
+        insert_into_db(file_name, names, connection)
+        connection.commit()
     except Error as e:
+        cursor = connection.cursor()
         cursor.execute('TRUNCATE TABLE gcms.qa_final_report;')
         connection.commit()
         print(f'{names}, Error: {e}')
+        break
 
-cursor.close()
 connection.close()
 print('Data inserted Successfully')
